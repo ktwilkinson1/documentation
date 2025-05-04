@@ -13,7 +13,7 @@ This article explains how to set up an SSL termination for F5 NGINX Plus. It als
 
 ## What is SSL Termination?
 
-SSL termination means that NGINX Plus acts as the server-side SSL endpoint for connections with clients: it performs the decryption of requests and encryption of responses that backend servers would otherwise have to do. The operation is called termination because NGINX Plus closes the client connection and forwards the client data over a newly created, unencrypted connection to the servers in an upstream group. In release R6 and later, NGINX Plus performs SSL termination for TCP connections as well as HTTP connections.
+SSL terminations act as the server-side SSL endpoint for connections with clients. It decrypts requests and encrypts responses that backend servers would usually do. Termination is when NGINX Plus closes the client connection and forwards the client data over a new unencrypted connection to servers in an upstream group. NGINX plus R6 and later performs SSL termination for TCP connections as well as HTTP connections.  
 
 ## Prerequisites
 
