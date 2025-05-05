@@ -13,7 +13,7 @@ This article explains how to set up an SSL termination for F5 NGINX Plus. It als
 
 ## What is SSL Termination?
 
-SSL terminations act as the server-side SSL endpoint for connections with clients. It decrypts requests and encrypts responses that backend servers would usually do. Termination is when NGINX Plus closes the client connection and forwards the client data over a new unencrypted connection to servers in an upstream group. NGINX plus R6 and later performs SSL termination for TCP connections as well as HTTP connections.  
+Termination is when NGINX Plus closes the client connection and forwards the client data over a new unencrypted connection to servers in an upstream group. SSL terminations act as the server-side SSL endpoint for connections with clients. It decrypts requests and encrypts responses that backend servers would usually do. NGINX plus R6 and later performs SSL termination for TCP connections and HTTP connections. 
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ SSL terminations act as the server-side SSL endpoint for connections with client
 
 ## Obtaining SSL Certificates
 
-First, you will need to obtain server certificates and a private key and put them on the server. A certificate can be obtained from a trusted certificate authority (CA) or generated using an SSL library such as [OpenSSL](https://www.openssl.org/).
+First, you will need to obtain server certificates and a private key to put on the server. Find Certificates using a trusted certificate authority (CA) or generate it with an SSL library like OpenSSL.
 
 ## Configuring NGINX Plus
 
@@ -46,7 +46,7 @@ stream {
 
 ### Adding SSL Certificates
 
-To add SSL certificates, specify the path to the certificates (which must be in the PEM format) with the [ssl_certificate](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_certificate) directive, and specify the path to the private key in the [ssl_certificate_key](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_certificate_key) directive:
+To add SSL certificates, specify the path to the certificates with the [ssl_certificate](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_certificate) directive (use PEM format). Specify the path to the private key in the [ssl_certificate_key](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_certificate_key) directive:
 
 ```nginx
 server {
@@ -56,7 +56,7 @@ server {
 }
 ```
 
-Additionally, the [ssl_protocols](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_protocols) and [ssl_ciphers](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_ciphers) directives can be used to limit connections and to include only the strong versions and ciphers of SSL/TLS:
+[ssl_protocols](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_protocols) and [ssl_ciphers](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_ciphers) directives can limit connections. They can also include only the strong versions and ciphers of SSL/TLS:
 
 ```nginx
 server {
@@ -70,7 +70,7 @@ The [ssl_ciphers](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ss
 
 ## Speeding up Secure TCP Connections
 
-Implementing SSL/TLS can significantly impact server performance, because the SSL handshake operation (a series of messages the client and server exchange to verify that the connection is trusted) is quite CPU-intensive. The default timeout for the SSL handshake is 60 seconds and it can be redefined with the [ssl_handshake_timeout](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_handshake_timeout) directive. We do not recommend setting this value too low or too high, as that might result either in handshake failure or a long time to wait for the handshake to complete:
+Implementing SSL/TLS uses the SSL handshake operation, a series of messages between the client and server that verifies the connection is trusted. This is CPU-intensive and can hinder server performance. The default timeout for the SSL handshake is 60 seconds, but can be redefined with the [ssl_handshake_timeout](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_handshake_timeout) directive. Setting this value too low or too high can result in a handshake failure or a longer wait for the handshake to complete:
 
 ```nginx
 server {
@@ -81,13 +81,13 @@ server {
 
 ### Optimizing the SSL Session Cache
 
-Creating a cache of the session parameters that apply to each SSL/TLS connection reduces the number of handshakes and thus can significantly improve performance. Caching is set with the [ssl_session_cache](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_session_cache) directive:
+You can improve performance by reducing the number of handshakes. This is done by creating a cache of the session parameters that apply to each SSL/TLS connection. Caching is set with the [ssl_session_cache](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_session_cache) directive and can improve performance:
 
 ```nginx
 ssl_session_cache;
 ```
 
-By default, NGINX Plus uses the `built-in` type of the session cache, which means the cache built in your SSL library. This is not optimal, because such a cache can be used by only one worker process and can cause memory fragmentation. Set the `ssl_session_cache` directive to `shared` to share the cache among all worker processes, which speeds up later connections because the connection setup information is already known:
+NGINX Plus uses the the cache built in your SSL library by default, the session cache. Such a cache can only be used by one worker process and can cause memory fragmentation. To share the cache among all worker processes, set the `ssl_session_cache` directive to shared . This speeds up later connections because the connection setup information is already known:
 
 ```nginx
 ssl_session_cache shared:SSL:1m;
@@ -95,7 +95,7 @@ ssl_session_cache shared:SSL:1m;
 
 As a reference, a 1-MB shared cache can hold approximately 4,000 sessions.
 
-By default, NGINX Plus retains cached session parameters for five minutes. Increasing the value of the [ssl_session_timeout](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_session_timeout) to several hours can improve performance because reusing cached session parameters reduces the number of time-consuming handshakes. When you increase the timeout, the cache needs to be bigger to accommodate the larger number of cached parameters that results. For the 4-hour timeout in the following example, a 20-MB cache is appropriate:
+NGINX Plus retains cached session parameters for five minutes by default. Increasing the value of the [ssl_session_timeout](https://nginx.org/en/docs/stream/ngx_stream_ssl_module.html#ssl_session_timeout) to several hours reuses cached session parameters and reduces the number of handshakes. This can improve performance, but the cache needs to be bigger to accommodate the larger number of cached parameters. For the 4-hour timeout in the following example, a 20-MB cache is appropriate:appropriate:
 
 ```nginx
 ssl_session_timeout 4h;
